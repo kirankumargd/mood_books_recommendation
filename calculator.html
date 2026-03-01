@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .calculator {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 350px;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+        }
+        
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-group {
+            display: none;
+        }
+        
+        .input-group.active {
+            display: block;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result.error {
+            background: #ffe0e0;
+            color: #c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Basic Calculator</h2>
+        
+        <div class="mode-selector">
+            <label for="mode">Select Mode:</label>
+            <select id="mode">
+                <option value="">-- Choose Operation --</option>
+                <option value="add">Addition</option>
+                <option value="sub">Subtraction</option>
+                <option value="mul">Multiplication</option>
+                <option value="div">Division</option>
+                <option value="cs">Celsius to Fahrenheit</option>
+            </select>
+        </div>
+        
+        <div id="mathInputs" class="input-group">
+            <label for="num1">First Number:</label>
+            <input type="number" id="num1" step="any" placeholder="Enter first number">
+            
+            <label for="num2">Second Number:</label>
+            <input type="number" id="num2" step="any" placeholder="Enter second number">
+        </div>
+        
+        <div id="tempInputs" class="input-group">
+            <label for="celsius">Temperature in Celsius:</label>
+            <input type="number" id="celsius" step="any" placeholder="Enter temperature in °C">
+        </div>
+        
+        <button id="calculateBtn" style="display: none;">Calculate</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const modeSelect = document.getElementById('mode');
+        const mathInputs = document.getElementById('mathInputs');
+        const tempInputs = document.getElementById('tempInputs');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultDiv = document.getElementById('result');
+        
+        modeSelect.addEventListener('change', function() {
+            const mode = this.value;
+            
+            // Hide all inputs and result
+            mathInputs.classList.remove('active');
+            tempInputs.classList.remove('active');
+            calculateBtn.style.display = 'none';
+            resultDiv.classList.remove('show');
+            
+            // Show appropriate inputs
+            if (mode === 'cs') {
+                tempInputs.classList.add('active');
+                calculateBtn.style.display = 'block';
+            } else if (mode) {
+                mathInputs.classList.add('active');
+                calculateBtn.style.display = 'block';
+            }
+        });
+        
+        calculateBtn.addEventListener('click', function() {
+            const mode = modeSelect.value;
+            let result;
+            let isError = false;
+            
+            if (mode === 'cs') {
+                const celsius = parseFloat(document.getElementById('celsius').value);
+                
+                if (isNaN(celsius)) {
+                    result = 'Please enter a valid temperature';
+                    isError = true;
+                } else {
+                    const fahrenheit = (celsius * 9/5) + 32;
+                    result = `${fahrenheit.toFixed(2)} °F`;
+                }
+            } else {
+                const num1 = parseFloat(document.getElementById('num1').value);
+                const num2 = parseFloat(document.getElementById('num2').value);
+                
+                if (isNaN(num1) || isNaN(num2)) {
+                    result = 'Please enter valid numbers';
+                    isError = true;
+                } else {
+                    switch(mode) {
+                        case 'add':
+                            result = num1 + num2;
+                            break;
+                        case 'sub':
+                            result = num1 - num2;
+                            break;
+                        case 'mul':
+                            result = num1 * num2;
+                            break;
+                        case 'div':
+                            if (num2 !== 0) {
+                                result = num1 / num2;
+                            } else {
+                                result = 'Error: Division by zero';
+                                isError = true;
+                            }
+                            break;
+                    }
+                    
+                    if (!isError) {
+                        result = `The result is: ${result}`;
+                    }
+                }
+            }
+            
+            resultDiv.textContent = result;
+            resultDiv.classList.add('show');
+            resultDiv.classList.toggle('error', isError);
+        });
+        
+        // Allow Enter key to calculate
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && calculateBtn.style.display === 'block') {
+                calculateBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
